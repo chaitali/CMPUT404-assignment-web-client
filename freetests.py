@@ -73,7 +73,7 @@ def echo_path_get(self):
     self.send_response(200)
     self.send_header("Content-type", "text/plain")
     self.end_headers()
-    self.wfile.write("%s\n" % self.path)
+    self.wfile.write(self.path.encode())
 
 # repeats your post back as json
 def echo_post(self):
