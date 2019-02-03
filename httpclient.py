@@ -20,35 +20,57 @@
 
 import sys
 import socket
-import re
 # you may use urllib to encode data appropriately
-import urllib.parse
+from urllib.parse import urlparse, urlencode
 
 def help():
     print("httpclient.py [GET/POST] [URL]\n")
 
 class HTTPResponse(object):
-    def __init__(self, code=200, body=""):
+    def __init__(self, code=500, body=""):
         self.code = code
         self.body = body
 
 class HTTPClient(object):
-    #def get_host_port(self,url):
 
-    def connect(self, host, port):
+    def connect(self):
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.socket.connect((host, port))
-        return None
+        self.socket.connect((self.host, self.port))
+        # print("Connected")
+        return self.socket
 
     def get_code(self, data):
-        return None
-
-    def get_headers(self,data):
-        return None
+        code = data.split()[1]
+        # print("Code: ", code)
+        return int(code)
 
     def get_body(self, data):
-        return None
-    
+        body = data.split("\r\n\r\n")[1]
+        return body
+
+    def get_response(self, request):
+        sock = self.connect()
+        self.sendall(request)
+        data = self.recvall(sock)
+        self.close()
+        return data
+
+    # From https://docs.python.org/3/library/urllib.parse.html
+    def parse_url(self, url):
+        parsed_url = urlparse(url)
+        self.host_name = parsed_url.netloc
+        self.host = parsed_url.netloc.split(":")[0]
+        self.port = parsed_url.port
+        self.path = parsed_url.path
+        if (self.path == ""):
+            self.path = "/"
+        if (self.port == None):
+            self.port = 80
+        # print(self.host, "Host")
+        # print(self.host_name, "HN")
+        # print("port", self.port)
+        # print("Path:", self.path)
+
     def sendall(self, data):
         self.socket.sendall(data.encode('utf-8'))
         
@@ -68,13 +90,29 @@ class HTTPClient(object):
         return buffer.decode('utf-8')
 
     def GET(self, url, args=None):
-        code = 500
-        body = ""
+        self.parse_url(url)
+        request = f"GET {self.path} HTTP/1.1\r\nHost: {self.host_name}\r\n\r\n"
+        data = self.get_response(request)
+
+        code = self.get_code(data)
+        body = self.get_body(data)
+        
         return HTTPResponse(code, body)
 
     def POST(self, url, args=None):
-        code = 500
         body = ""
+        self.parse_url(url)
+        if (args != None):
+            # From https://stackoverflow.com/questions/4163263/transferring-dictionary-via-post-request
+            body = urlencode(args)
+        # From https://realpython.com/python-f-strings/#f-strings-a-new-and-improved-way-to-format-strings-in-python
+        length = f"\nContent-Length: {len(body)}"
+        request = f"POST {self.path} HTTP/1.1\r\nHost: {self.host_name}\nContent-Type: application/x-www-form-urlencoded{length}\r\n\r\n{body}"
+        
+        data = self.get_response(request)
+
+        code = self.get_code(data)
+        body = self.get_body(data)
         return HTTPResponse(code, body)
 
     def command(self, url, command="GET", args=None):
