@@ -18,3 +18,27 @@ examples thus some of the code is Copyright © 2001-2013 Python
 Software Foundation; All Rights Reserved under the PSF license (GPL
 compatible) http://docs.python.org/2/library/socketserver.html
 
+References
+========================
+
+For HTTP Response & Request Formatting:\
+https://www.tutorialspoint.com/http/http_requests.htm
+
+Python String Formatting:\
+https://realpython.com/python-f-strings/#f-strings-a-new-and-improved-way-to-format-strings-in-python
+
+Transferring Dictionary via Post Request: (Credits to Daniel Roseman)\
+https://stackoverflow.com/questions/4163263/transferring-dictionary-via-post-request
+
+And the urllib.parse docs for urlparse and urlencode:\
+https://docs.python.org/3/library/urllib.parse.html
+
+Also looked at:\
+https://realpython.com/python-sockets/
+
+
+
+
+
+
+
